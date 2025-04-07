@@ -1,0 +1,5 @@
+aws_region       = "us-east-1"
+project_name     = "terraform-coffee-shop"
+environment      = "prod"
+state_bucket     = "coffee-shop-terraform-prod-state-bucket"   
+state_lock_table = "coffee-shop-terraform-prod-lock-table"     
