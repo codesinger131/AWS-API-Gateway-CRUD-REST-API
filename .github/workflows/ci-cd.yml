@@ -23,20 +23,21 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
       - name: Terraform Init & Validate
         working-directory: ./terraform
         run: |
           terraform init
           terraform validate
 
-  
-
   deploy-staging:
     name: Deploy to Staging
-   
+    needs: [ unit-tests ]
     runs-on: ubuntu-latest
     environment:
-      name: staging   # 'staging' environment in GitHub is set with required manual approvals.
+      name: staging
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -63,7 +64,7 @@ jobs:
       - name: Terraform Plan (Staging)
         working-directory: ./terraform
         run: |
-          terraform plan -var="environment=staging" -var-file=dev.tfvars -out=staging.tfplan
+          terraform plan -var="environment=staging" -var-file=staging.tfvars -out=staging.tfplan
           terraform show -no-color staging.tfplan > staging-plan.txt
 
       - name: Upload Staging Plan Artifact
@@ -72,17 +73,16 @@ jobs:
           name: staging-tfplan
           path: ./terraform/staging-plan.txt
 
-      # The 'staging' environment in GitHub is set with required manual approvals.
       - name: Terraform Apply (Staging)
         working-directory: ./terraform
-        run: terraform apply  -auto-approve staging.tfplan
+        run: terraform apply -auto-approve staging.tfplan
 
   deploy-prod:
     name: Deploy to Production
     needs: [ deploy-staging ]
     runs-on: ubuntu-latest
     environment:
-      name: production   # 'production' environment in GitHub is set with required manual approvals.
+      name: production
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -100,25 +100,26 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
-      - name: Terraform Init & Validate (Prod)
+      - name: Terraform Init & Validate (Production)
         working-directory: ./terraform
         run: |
           terraform init
           terraform validate
 
-      - name: Terraform Plan (Prod)
+      - name: Terraform Plan (Production)
         working-directory: ./terraform
         run: |
-          terraform plan -var="environment=prod" -var-file=prod.tfvars -out=prod.tfplan
-          terraform show -no-color prod.tfplan > prod-plan.txt
+          terraform plan -var="environment=production" -var-file=production.tfvars -out=production.tfplan
+          terraform show -no-color production.tfplan > production-plan.txt
 
       - name: Upload Production Plan Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: prod-tfplan
-          path: ./terraform/prod-plan.txt
+          name: production-tfplan
+          path: ./terraform/production-plan.txt
 
-      #  manual approval before applying the plan.
-      - name: Terraform Apply (Prod)
+      - name: Terraform Apply (Production)
         working-directory: ./terraform
-        run: terraform apply -auto-approve prod.tfplan
+        run: terraform apply -auto-approve production.tfplan
+      - name: Notify Deployment Success
+        run: echo "Deployment to Production was successful!"
