@@ -10,10 +10,10 @@ on:
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout Repository
-#         uses: actions/checkout@v3
+#         uses: actions/checkout@v4
 #
 #       - name: Setup Node.js
-#         uses: actions/setup-node@v3
+#         uses: actions/setup-node@v4
 #         with:
 #           node-version: 16
 #
@@ -40,10 +40,10 @@ jobs:
       name: staging
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -68,7 +68,7 @@ jobs:
           terraform show -no-color staging.tfplan > staging-plan.txt
 
       - name: Upload Staging Plan Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: staging-tfplan
           path: ./terraform/staging-plan.txt
@@ -85,10 +85,10 @@ jobs:
       name: production
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 16
 
@@ -113,7 +113,7 @@ jobs:
           terraform show -no-color production.tfplan > production-plan.txt
 
       - name: Upload Production Plan Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: production-tfplan
           path: ./terraform/production-plan.txt
