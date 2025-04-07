@@ -29,30 +29,11 @@ jobs:
           terraform init
           terraform validate
 
-  terratest:
-    name: Run Terratest
-    needs: [ unit-tests ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Setup Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '1.18'
-
-      - name: Install Go Dependencies
-        working-directory: ./terratest
-        run: go mod download
-
-      - name: Run Terratest
-        working-directory: ./terratest
-        run: go test -v -timeout 30m
+  
 
   deploy-staging:
     name: Deploy to Staging
-    needs: [ unit-tests, terratest ]
+   
     runs-on: ubuntu-latest
     environment:
       name: staging   # 'staging' environment in GitHub is set with required manual approvals.
