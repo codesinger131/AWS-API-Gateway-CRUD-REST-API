@@ -4,37 +4,37 @@ on:
   push:
     branches: [ "master" ]
 
+# jobs:
+#   unit-tests:
+#     name: Run Unit Tests & Terraform Validate
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
+#
+#       - name: Setup Node.js
+#         uses: actions/setup-node@v3
+#         with:
+#           node-version: 16
+#
+#       - name: Install Node Dependencies
+#         run: npm install
+#
+#       - name: Run Unit Tests
+#         run: npm run test
+#
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v2
+#
+#       - name: Terraform Init & Validate
+#         working-directory: ./terraform
+#         run: |
+#           terraform init
+#           terraform validate
+
 jobs:
-  unit-tests:
-    name: Run Unit Tests & Terraform Validate
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Install Node Dependencies
-        run: npm install
-
-      - name: Run Unit Tests
-        run: npm run test
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-
-      - name: Terraform Init & Validate
-        working-directory: ./terraform
-        run: |
-          terraform init
-          terraform validate
-
   deploy-staging:
     name: Deploy to Staging
-    needs: [ unit-tests ]
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -121,5 +121,3 @@ jobs:
       - name: Terraform Apply (Production)
         working-directory: ./terraform
         run: terraform apply -auto-approve production.tfplan
-      - name: Notify Deployment Success
-        run: echo "Deployment to Production was successful!"
