@@ -1,0 +1,5 @@
+aws_region       = "us-east-1"
+project_name     = "terraform-lambda-modular"
+environment      = "dev"
+state_bucket     = "coffee-shop-terraform-dev-state-bucket"    
+state_lock_table = "coffee-shop-terraform-dev-lock-table"       
