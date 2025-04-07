@@ -1,0 +1,143 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  unit-tests:
+    name: Run Unit Tests & Terraform Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Node Dependencies
+        run: npm install
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Terraform Init & Validate
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform validate
+
+  terratest:
+    name: Run Terratest
+    needs: [ unit-tests ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.18'
+
+      - name: Install Go Dependencies
+        working-directory: ./terratest
+        run: go mod download
+
+      - name: Run Terratest
+        working-directory: ./terratest
+        run: go test -v -timeout 30m
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [ unit-tests, terratest ]
+    runs-on: ubuntu-latest
+    environment:
+      name: staging   # 'staging' environment in GitHub is set with required manual approvals.
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies and Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init & Validate (Staging)
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform validate
+
+      - name: Terraform Plan (Staging)
+        working-directory: ./terraform
+        run: |
+          terraform plan -var="environment=staging" -var-file=dev.tfvars -out=staging.tfplan
+          terraform show -no-color staging.tfplan > staging-plan.txt
+
+      - name: Upload Staging Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: staging-tfplan
+          path: ./terraform/staging-plan.txt
+
+      # The 'staging' environment in GitHub is set with required manual approvals.
+      - name: Terraform Apply (Staging)
+        working-directory: ./terraform
+        run: terraform apply  -auto-approve staging.tfplan
+
+  deploy-prod:
+    name: Deploy to Production
+    needs: [ deploy-staging ]
+    runs-on: ubuntu-latest
+    environment:
+      name: production   # 'production' environment in GitHub is set with required manual approvals.
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install Dependencies and Build
+        run: |
+          npm install
+          npm run build
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init & Validate (Prod)
+        working-directory: ./terraform
+        run: |
+          terraform init
+          terraform validate
+
+      - name: Terraform Plan (Prod)
+        working-directory: ./terraform
+        run: |
+          terraform plan -var="environment=prod" -var-file=prod.tfvars -out=prod.tfplan
+          terraform show -no-color prod.tfplan > prod-plan.txt
+
+      - name: Upload Production Plan Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: prod-tfplan
+          path: ./terraform/prod-plan.txt
+
+      #  manual approval before applying the plan.
+      - name: Terraform Apply (Prod)
+        working-directory: ./terraform
+        run: terraform apply -auto-approve prod.tfplan
