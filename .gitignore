@@ -1,37 +1,57 @@
-# Node.js dependencies
-node_modules/
-npm-debug.log*
-yarn-error.log*
-
-# Compiled output
-dist/
-*.tsbuildinfo
-
-# Terraform files
+# ========================
+#  Terraform files
+# ========================
+# Local Terraform working directory and state files
 .terraform/
-*.tfstate
-*.tfstate.*
-crash.log
-override.tf
-override.tf.json
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
 terraform.tfvars
-terraform.tfvars.json
-
-# Terraform artifacts
 *.tfplan
-zips/
 
-# Environment variables
-.env
-.env.local
+# Crash logs
+crash.log
+crash.*.log
 
-# Logs
-*.log
+# Ignore any user-specific override files
+*.tfvars.json
 
-# IDE and Editor files
-.vscode/
-.idea/
+# ========================
+#  AWS Lambda (Node.js)
+# ========================
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
 
-# OS generated files
+# If you keep package-lock.json or yarn.lock under version control, remove them from ignore
+# package-lock.json
+# yarn.lock
+
+# ========================
+#  AWS Lambda (Python)
+# ========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.whl
+
+# Virtual environment directories
+.venv/
+venv/
+env/
+
+# ========================
+#  AWS Lambda artifacts
+# ========================
+*.zip  # Common if you package Lambda code into zips locally
+
+# ========================
+#  OS & Editor
+# ========================
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/
